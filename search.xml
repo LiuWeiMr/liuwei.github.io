@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[为Promise添加一个方法]]></title>
+    <url>%2F2018%2F03%2F29%2F%E4%B8%BAPromise%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E6%96%B9%E6%B3%95%2F</url>
+    <content type="text"><![CDATA[Promise在JS中可以说有着举足轻重的地位，很早之前就看了很多Promise的文章和书籍，记得在一篇文章中看到过Promise的list方法（作用下边有详细介绍）还做了笔记，但是，在使用的时候却发现现在的JS标准（ES6）不支持list方法，所以，就自己写一个吧！哈哈哈哈哈 Promise.list()： 作用：将多个Promise对象包装成一个新的Promise对象，并行运行多个Promise对象，所有Promise对象结束触发then事件。主要功能：若有Promise对象出错（list方法的重点），则包装为 1&#123; error: &quot;error msg&quot; &#125; // 错误信息 正确则返回结果。 示例： 12345var p = Promise.list([p1,p2,p3]);p.then(function(values) &#123; // values为[&#123;p1的结果&#125;,&#123;p2的结果&#125;,&#123;p3的结果&#125;]&#125;) 接受参数： 一个数组，数组每一项为Promise对象，如p1、p2、p3。 返回结果： 一个数组，顺序排列每一项的结果。 实现： 1234567891011121314151617181920212223// 原始版if (!Promise.list) &#123; Promise.list = function (jobArr) &#123; let jobsResult = []; jobArr.forEach(function (job) &#123; // 运行数组内的Promise对象，出现错误包装为&#123;&quot;error&quot;: reason&#125; jobsResult.push(job.then(function (value) &#123; return value; &#125;).catch(function (reason) &#123; return &#123;&quot;error&quot;: reason&#125;; &#125;)); &#125;) // 用Promise.all包装为一个新的Promise对象 return Promise.all(jobsResult); &#125;&#125;// 精简版if (!Promise.list) &#123; Promise.list = list =&gt; Promise.all( list.map( item =&gt; item.then(val =&gt; (&#123;val&#125;)).catch(err =&gt; (&#123;err&#125;))));&#125; 使用示例： 1234567891011121314151617181920212223242526272829303132333435363738394041// 添加Promise.list方法if (!Promise.list) &#123; Promise.list = function (jobArr) &#123; let jobsResult = []; jobArr.forEach(function (job) &#123; jobsResult.push(job.then(function (value) &#123; return value; &#125;).catch(function (reason) &#123; return &#123;&quot;error&quot;: reason&#125;; &#125;)); &#125;) return Promise.all(jobsResult); &#125;&#125;// 创建一个数组，每一项为Promise对象var pArr = [1, 2, 3, 4].map(function (value) &#123; if (value == 3) &#123; // 第三个设置为会出错的Promise对象 return createPromise(0); &#125; else &#123; return createPromise(1); &#125;&#125;)// 创建Promise对象的方法，returnStatus为1返回正确的Promise对象，其他则返回错误的Promise对象function createPromise(returnStatus) &#123; return new Promise(function (reslove, reject) &#123; if (returnStatus == 1) &#123; reslove(&#123;data: &quot;success&quot;&#125;); &#125; else &#123; reject(&quot;failed&quot;); &#125; &#125;);&#125;// 调用Promise.list()方法Promise.list(pArr).then(function (value) &#123; console.log(&quot;value:&quot;, value); // 第三个会返回错误信息：[ &#123; data: &apos;success&apos; &#125;,&#123; data: &apos;success&apos; &#125;,&#123; error: &apos;failed&apos; &#125;,&#123; data: &apos;success&apos; &#125; ]&#125;).catch(function (reason) &#123; console.log(&quot;error:&quot;, reason);&#125;) 总结： 欢迎指教。哈哈哈哈哈]]></content>
+      <categories>
+        <category>Javascript</category>
+      </categories>
+      <tags>
+        <tag>Node</tag>
+        <tag>JavaScript</tag>
+        <tag>Promise</tag>
+        <tag>Es6</tag>
+      </tags>
+  </entry>
+</search>

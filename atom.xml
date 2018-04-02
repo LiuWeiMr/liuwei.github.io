@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>刘伟的BLOG</title>
+  
+  
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://ghithub.nmgliuw.top/"/>
+  <updated>2018-03-30T09:21:01.645Z</updated>
+  <id>http://ghithub.nmgliuw.top/</id>
+  
+  <author>
+    <name>LiuWei</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>为Promise添加一个方法</title>
+    <link href="http://ghithub.nmgliuw.top/2018/03/29/%E4%B8%BAPromise%E6%B7%BB%E5%8A%A0%E4%B8%80%E4%B8%AA%E6%96%B9%E6%B3%95/"/>
+    <id>http://ghithub.nmgliuw.top/2018/03/29/为Promise添加一个方法/</id>
+    <published>2018-03-29T10:56:35.000Z</published>
+    <updated>2018-03-30T09:21:01.645Z</updated>
+    
+    <content type="html"><![CDATA[<p>　　Promise在JS中可以说有着举足轻重的地位，很早之前就看了很多Promise的文章和书籍，记得在一篇文章中看到过Promise的list方法（<strong>作用下边有详细介绍</strong>）还做了笔记，但是，在使用的时候却发现现在的JS标准（ES6）不支持list方法，所以，就自己写一个吧！哈哈哈哈哈</p><p><strong>Promise.list()：</strong></p><p><strong>作用：</strong>将多个Promise对象包装成一个新的Promise对象，并行运行多个Promise对象，所有Promise对象结束触发then事件。主要功能：若有Promise对象出错（list方法的重点），则包装为</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; error: &quot;error msg&quot; &#125;    // 错误信息</span><br></pre></td></tr></table></figure><p>正确则返回结果。</p><p><strong>示例：</strong></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">var p = Promise.list([p1,p2,p3]);</span><br><span class="line"></span><br><span class="line">p.then(function(values) &#123;</span><br><span class="line">    // values为[&#123;p1的结果&#125;,&#123;p2的结果&#125;,&#123;p3的结果&#125;]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure><p><strong>接受参数：</strong> 一个数组，数组每一项为Promise对象，如p1、p2、p3。</p><p><strong>返回结果：</strong> 一个数组，顺序排列每一项的结果。</p><p><strong>实现：</strong></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">// 原始版</span><br><span class="line">if (!Promise.list) &#123;</span><br><span class="line">    Promise.list = function (jobArr) &#123;</span><br><span class="line">        let jobsResult = [];</span><br><span class="line">        jobArr.forEach(function (job) &#123;</span><br><span class="line"></span><br><span class="line">            // 运行数组内的Promise对象，出现错误包装为&#123;&quot;error&quot;: reason&#125;</span><br><span class="line">            jobsResult.push(job.then(function (value) &#123;</span><br><span class="line">                return value;</span><br><span class="line">            &#125;).catch(function (reason) &#123;</span><br><span class="line">                return &#123;&quot;error&quot;: reason&#125;;</span><br><span class="line">            &#125;));</span><br><span class="line">        &#125;)</span><br><span class="line"></span><br><span class="line">        // 用Promise.all包装为一个新的Promise对象</span><br><span class="line">        return Promise.all(jobsResult);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 精简版</span><br><span class="line">if (!Promise.list) &#123;</span><br><span class="line">    Promise.list = list =&gt; Promise.all( list.map( item =&gt; item.then(val =&gt; (&#123;val&#125;)).catch(err =&gt; (&#123;err&#125;))));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p><strong>使用示例：</strong></p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">// 添加Promise.list方法</span><br><span class="line">if (!Promise.list) &#123;</span><br><span class="line">    Promise.list = function (jobArr) &#123;</span><br><span class="line">        let jobsResult = [];</span><br><span class="line">        jobArr.forEach(function (job) &#123;</span><br><span class="line">            jobsResult.push(job.then(function (value) &#123;</span><br><span class="line">                return value;</span><br><span class="line">            &#125;).catch(function (reason) &#123;</span><br><span class="line">                return &#123;&quot;error&quot;: reason&#125;;</span><br><span class="line">            &#125;));</span><br><span class="line">        &#125;)</span><br><span class="line">        return Promise.all(jobsResult);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 创建一个数组，每一项为Promise对象</span><br><span class="line">var pArr = [1, 2, 3, 4].map(function (value) &#123;</span><br><span class="line">    if (value == 3) &#123;    // 第三个设置为会出错的Promise对象</span><br><span class="line">        return createPromise(0);</span><br><span class="line">    &#125; else &#123;</span><br><span class="line">        return createPromise(1);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">// 创建Promise对象的方法，returnStatus为1返回正确的Promise对象，其他则返回错误的Promise对象</span><br><span class="line">function createPromise(returnStatus) &#123;</span><br><span class="line">    return new Promise(function (reslove, reject) &#123;</span><br><span class="line">        if (returnStatus == 1) &#123;</span><br><span class="line">            reslove(&#123;data: &quot;success&quot;&#125;);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            reject(&quot;failed&quot;);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 调用Promise.list()方法</span><br><span class="line">Promise.list(pArr).then(function (value) &#123;</span><br><span class="line">    console.log(&quot;value:&quot;, value);    // 第三个会返回错误信息：[ &#123; data: &apos;success&apos; &#125;,&#123; data: &apos;success&apos; &#125;,&#123; error: &apos;failed&apos; &#125;,&#123; data: &apos;success&apos; &#125; ]</span><br><span class="line">&#125;).catch(function (reason) &#123;</span><br><span class="line">    console.log(&quot;error:&quot;, reason);</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure><p><strong>总结：</strong> 欢迎指教。哈哈哈哈哈</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;　　Promise在JS中可以说有着举足轻重的地位，很早之前就看了很多Promise的文章和书籍，记得在一篇文章中看到过Promise的list方法（&lt;strong&gt;作用下边有详细介绍&lt;/strong&gt;）还做了笔记，但是，在使用的时候却发现现在的JS标准（ES6）不支持li
+      
+    
+    </summary>
+    
+      <category term="Javascript" scheme="http://ghithub.nmgliuw.top/categories/Javascript/"/>
+    
+    
+      <category term="Node" scheme="http://ghithub.nmgliuw.top/tags/Node/"/>
+    
+      <category term="JavaScript" scheme="http://ghithub.nmgliuw.top/tags/JavaScript/"/>
+    
+      <category term="Promise" scheme="http://ghithub.nmgliuw.top/tags/Promise/"/>
+    
+      <category term="Es6" scheme="http://ghithub.nmgliuw.top/tags/Es6/"/>
+    
+  </entry>
+  
+</feed>
